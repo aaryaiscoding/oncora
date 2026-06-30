@@ -15,9 +15,9 @@ import seaborn as sns
 from dataset import get_dataloaders
 
 # ---- Config ----
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cpu")  # MX130 GPU is too old (CUDA capability 5.0) for current PyTorch — using CPU
 EPOCHS = 10
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0005  # lowered from 0.001 since layer4 now trains too — keeps its pretrained weights from shifting too aggressively
 MODEL_SAVE_PATH = "../models/mri_classifier.pt"
 
 print(f"Using device: {DEVICE}")
@@ -35,6 +35,15 @@ def build_model(num_classes):
     # textures, shapes. We don't want to destroy that knowledge.
     for param in model.parameters():
         param.requires_grad = False
+
+    # Unfreeze layer4 (the last residual block). Early layers detect generic
+    # features (edges, textures) that transfer fine from ImageNet as-is, but
+    # late layers detect more abstract, task-specific patterns. Letting layer4
+    # retrain lets the model learn MRI-specific distinctions (e.g. the subtle
+    # differences between glioma/meningioma/notumor) instead of relying on
+    # generic ImageNet features for everything except the final classification.
+    for param in model.layer4.parameters():
+        param.requires_grad = True
 
     # Replace the final classification layer to output 4 classes instead of 1000
     num_features = model.fc.in_features
@@ -97,10 +106,15 @@ def main():
 
     model = build_model(num_classes)
     criterion = nn.CrossEntropyLoss()
-    # Only the new final layer has requires_grad=True, so only it gets trained
-    optimizer = optim.Adam(model.fc.parameters(), lr=LEARNING_RATE)
+    # Now training both the new final layer AND layer4. layer4 already has
+    # decent pretrained weights, so we don't want to blow them away with a
+    # big learning rate — Adam will adjust fc faster than layer4 in practice,
+    # but a single conservative LR for both keeps this simple and stable.
+    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = optim.Adam(trainable_params, lr=LEARNING_RATE)
 
     history = {"train_acc": [], "val_acc": [], "train_loss": [], "val_loss": []}
+    best_val_acc = 0.0  # tracks the best validation accuracy seen so far across epochs
 
     print("\nStarting training...\n")
     for epoch in range(EPOCHS):
@@ -116,6 +130,29 @@ def main():
               f"Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | "
               f"Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
 
+        # Save a checkpoint only when validation accuracy improves. This way,
+        # even if later epochs overfit and val accuracy drops, we still keep
+        # the best version the model reached — not just whatever the last
+        # epoch happened to be.
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            torch.save({
+                "model_state_dict": model.state_dict(),
+                "class_names": class_names,
+                "val_accuracy": val_acc,
+                "epoch": epoch + 1,
+            }, MODEL_SAVE_PATH)
+            print(f"  -> New best val accuracy ({val_acc:.4f}). Checkpoint saved.")
+
+    # ---- Load best checkpoint for final test evaluation ----
+    # The loop above already saved the best-performing version to disk as it
+    # trained. We reload it here so the test evaluation (and saved plots)
+    # reflect the best model, not whatever the final epoch happened to produce.
+    best_checkpoint = torch.load(MODEL_SAVE_PATH, map_location=DEVICE, weights_only=False)
+    model.load_state_dict(best_checkpoint["model_state_dict"])
+    print(f"\nLoaded best checkpoint from epoch {best_checkpoint['epoch']} "
+          f"(val accuracy: {best_checkpoint['val_accuracy']:.4f})")
+
     # ---- Final test evaluation ----
     print("\nEvaluating on held-out test set...\n")
     test_loss, test_acc, preds, labels = evaluate(model, test_loader, criterion)
@@ -123,12 +160,7 @@ def main():
     print("\nClassification Report:")
     print(classification_report(labels, preds, target_names=class_names))
 
-    # ---- Save model ----
-    torch.save({
-        "model_state_dict": model.state_dict(),
-        "class_names": class_names,
-    }, MODEL_SAVE_PATH)
-    print(f"\nModel saved to {MODEL_SAVE_PATH}")
+    print(f"\nBest model already saved to {MODEL_SAVE_PATH} (during training loop)")
 
     # ---- Plot accuracy curve ----
     plt.figure(figsize=(8, 5))
