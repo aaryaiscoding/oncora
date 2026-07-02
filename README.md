@@ -1,4 +1,4 @@
-<div align="center">
+
 
 ```
  ██████╗ ███╗   ██╗ ██████╗ ██████╗ ██████╗  █████╗
@@ -8,9 +8,9 @@
 ╚██████╔╝██║ ╚████║╚██████╗╚██████╔╝██║  ██║██║  ██║
  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 ```
-</div>
 
-<div align="center">
+
+
 
 # Oncora
 
@@ -59,7 +59,7 @@ The frontend runs with mock data if the backend isn't running — so you can bui
 
 ---
 
-## Project structure </div>
+## Project structure 
 ```
 oncora/
 ├── backend/        # FastAPI — MRI prediction + prescription analysis APIs
