@@ -74,7 +74,7 @@ pip install streamlit requests plotly pillow
 streamlit run app.py
 ```
 
-The frontend runs with mock data if the backend isn't running — so you can build and test the UI independently.
+The frontend runs with mock data if the backend isn't running — so you can build and test UI independently.
 
 **Tests**
 ```bash
