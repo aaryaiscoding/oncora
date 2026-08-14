@@ -7,7 +7,10 @@ FastAPI app exposing:
 """
 
 import os
+import json
 import logging
+import sys
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -18,6 +21,7 @@ import io
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from nlp.parser import get_parser
 from nlp.interaction_store import InteractionStore
@@ -31,6 +35,14 @@ from nlp.schemas import (
     DoseAlertOut, DrugSourceOut,
 )
 from risk_assessment import assess_fused_risk
+
+# backend/ -> project root is one level up. Needed to import
+# scripts.sanity_check, which lives outside the backend/ tree (same
+# reason frontend/views/nlp_sanity_page.py used to do this before the
+# React migration moved that call server-side).
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+from scripts.sanity_check import run_round, save_round, DEFAULT_HISTORY_PATH  # noqa: E402
 
 load_dotenv()
 
@@ -47,6 +59,8 @@ STD = [0.229, 0.224, 0.225]
 
 INTERACTIONS_DB_PATH = os.environ.get("INTERACTIONS_DB_PATH", "../data/interactions.db")
 DOSE_LIMITS_DB_PATH = os.environ.get("DOSE_LIMITS_DB_PATH", "../data/dose_limits.db")
+FL_HISTORY_PATH = os.path.join(os.path.dirname(__file__), "../docs/fl_round_history.json")
+NLP_EVAL_HISTORY_PATH = os.environ.get("NLP_EVAL_HISTORY_PATH", DEFAULT_HISTORY_PATH)
 
 # ---- App setup ----
 app = FastAPI(title="Oncora API")
@@ -299,4 +313,49 @@ async def assess_risk(
         "has_low_confidence_interaction_data": fused.has_low_confidence_interaction_data,
         "biobert_available": hybrid_result.biobert_available,
     }
+
+
+@app.get("/fl-history")
+def fl_history():
+    """Global model accuracy per federated round, for the Federated
+    Monitor page. Returns [] (not 404) when the file doesn't exist yet
+    so the frontend can render its own empty-state instead of handling
+    an error response."""
+    try:
+        with open(FL_HISTORY_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+class SanityRunRequest(BaseModel):
+    sample_size: int = 10
+
+
+@app.get("/nlp-sanity-history")
+def nlp_sanity_history():
+    """Round-by-round accuracy history for the NLP Sanity Check page.
+    Same empty-list-on-missing-file behavior as /fl-history."""
+    if not os.path.exists(NLP_EVAL_HISTORY_PATH):
+        return []
+    with open(NLP_EVAL_HISTORY_PATH) as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+
+@app.post("/nlp-sanity-run")
+def nlp_sanity_run(payload: SanityRunRequest):
+    """Runs one round of scripts.sanity_check against the live
+    prescription NLP pipeline and appends it to the history file. Moved
+    here from the old Streamlit page (which called run_round/save_round
+    directly in-process) since a static frontend can't call into Python
+    - this is now the only caller of those two functions."""
+    try:
+        result = run_round(sample_size=payload.sample_size)
+        save_round(result)
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 

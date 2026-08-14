@@ -40,3 +40,11 @@ models/*.pt
 docs/fl_round_history.json
 docs/nlp_eval_history.json
 .pytest_cache/
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+.env.local
+npm-debug.log*

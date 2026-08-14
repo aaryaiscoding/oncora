@@ -1,0 +1,470 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Source+Serif+4:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background-color: #fdfdfb;
+  color: #111111;
+}
+
+h1, h2, h3 {
+  margin: 0 0 0.5em 0;
+}
+
+h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+  color: #111111;
+  letter-spacing: 0.3px;
+  font-size: 2.2rem;
+}
+
+h2, h3 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 700;
+  color: #111111;
+}
+
+h3 {
+  font-size: 1.15rem;
+}
+
+p {
+  line-height: 1.6;
+}
+
+hr {
+  border: none;
+  border-top: 2px solid #111111;
+  margin: 24px 0;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb {
+  background: #111111;
+  border-radius: 0px;
+}
+
+/* ---- App shell ---- */
+
+.oncora-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.oncora-sidebar {
+  width: 15rem;
+  flex-shrink: 0;
+  background-color: #f2f2ee;
+  border-right: 2px solid #111111;
+  padding: 24px 20px;
+  position: relative;
+}
+
+.oncora-sidebar h1 {
+  font-size: 2.1rem;
+  border-bottom: 3px solid #111111;
+  padding-bottom: 10px;
+  margin-bottom: 0;
+}
+
+.oncora-byline {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.3px;
+  color: #333333;
+  margin-top: 6px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #111111;
+}
+
+.oncora-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.oncora-nav-label {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #555555;
+  margin-bottom: 8px;
+}
+
+.oncora-nav-item {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  padding: 9px 10px;
+  cursor: pointer;
+  color: #333333;
+  border-radius: 0;
+}
+
+.oncora-nav-item:hover {
+  background: #e8e8e2;
+  color: #111111;
+}
+
+.oncora-nav-item.active {
+  background: #ffffff;
+  border-left: 3px solid #b31b1b;
+  color: #111111;
+  font-weight: 600;
+}
+
+.oncora-footer {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10.5px;
+  color: #444444;
+  line-height: 1.6;
+  position: fixed;
+  bottom: 18px;
+  width: 15rem;
+  border-top: 1px solid #111111;
+  padding-top: 10px;
+  padding-right: 20px;
+}
+
+.oncora-main {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 48px 80px 48px;
+  max-width: 1200px;
+}
+
+/* ---- Shared atoms ---- */
+
+.oncora-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #b31b1b;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.oncora-risk-badge {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 2px;
+  border: 2px solid currentColor;
+}
+
+.oncora-button {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  background-color: #111111;
+  color: #fdfdfb;
+  border: 1.5px solid #111111;
+  transition: background 0.15s ease;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.oncora-button:hover:not(:disabled) {
+  background-color: #b31b1b;
+  border-color: #b31b1b;
+  color: #ffffff;
+}
+
+.oncora-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.oncora-button.block {
+  width: 100%;
+  display: block;
+}
+
+.oncora-metric {
+  border: 1.5px solid #111111;
+  border-radius: 2px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.oncora-metric-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #555555;
+  margin-bottom: 6px;
+}
+
+.oncora-metric-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 27px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.oncora-metric-delta {
+  font-size: 12px;
+  color: #444444;
+  margin-top: 4px;
+}
+
+.oncora-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.oncora-file-drop {
+  border: 2px dashed #111111;
+  border-radius: 2px;
+  background: #f9f9f6;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.oncora-file-drop input {
+  display: none;
+}
+
+.oncora-file-drop-label {
+  font-size: 13px;
+  color: #333333;
+}
+
+.oncora-file-drop img {
+  max-width: 100%;
+  border-radius: 2px;
+  margin-top: 12px;
+}
+
+.oncora-textarea {
+  width: 100%;
+  border-radius: 2px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  border: 1.5px solid #111111;
+  padding: 10px 12px;
+  font-size: 14px;
+  resize: vertical;
+  background: #ffffff;
+  color: #111111;
+}
+
+.oncora-textarea::placeholder {
+  color: #888888;
+}
+
+.oncora-chart-box {
+  border-radius: 2px;
+  border: 1.5px solid #111111;
+  padding: 10px;
+  background: #ffffff;
+}
+
+details.oncora-expander {
+  border-radius: 2px;
+  border: 1.5px solid #111111;
+  background: #ffffff;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+details.oncora-expander summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+details.oncora-expander[open] summary {
+  margin-bottom: 8px;
+}
+
+.oncora-alert {
+  border-radius: 2px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  border: 1.5px solid currentColor;
+  padding: 12px 16px;
+  margin: 12px 0;
+  color: #111111;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.oncora-alert.success { color: #1e5631; }
+.oncora-alert.warning { color: #8a6d1f; }
+.oncora-alert.error { color: #b31b1b; }
+.oncora-alert.info { color: #111111; }
+
+.oncora-alert p {
+  margin: 0;
+  color: inherit;
+}
+
+.oncora-caption {
+  font-size: 12px;
+  color: #666666;
+  margin-top: 6px;
+}
+
+.oncora-drug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border: 1px solid #111111;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.oncora-drug-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+}
+
+.oncora-drug-source {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.oncora-info-card {
+  border-radius: 2px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.oncora-info-card-title {
+  font-family: 'Source Serif 4', serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.oncora-info-card-desc {
+  font-size: 12px;
+  color: #333333;
+  line-height: 1.6;
+}
+
+.oncora-columns {
+  display: grid;
+  gap: 32px;
+}
+
+.oncora-columns.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.oncora-columns.cols-2-3-2 {
+  grid-template-columns: 3fr 2fr;
+}
+
+.oncora-columns.cols-2-1 {
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .oncora-columns.cols-2,
+  .oncora-columns.cols-2-3-2,
+  .oncora-columns.cols-2-1 {
+    grid-template-columns: 1fr;
+  }
+  .oncora-app {
+    flex-direction: column;
+  }
+  .oncora-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #111111;
+  }
+  .oncora-footer {
+    position: static;
+    width: auto;
+    margin-top: 20px;
+  }
+  .oncora-main {
+    max-width: 100%;
+    padding: 24px;
+  }
+}
+
+.oncora-score-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: #444444;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.oncora-score-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 700;
+  color: #111111;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.oncora-breakdown-row {
+  margin-bottom: 14px;
+}
+
+.oncora-breakdown-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.oncora-breakdown-head .weight {
+  opacity: 0.6;
+}
+
+.oncora-breakdown-head .value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+}
+
+.oncora-breakdown-track {
+  background: #f2f2ee;
+  border-radius: 2px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.oncora-breakdown-fill {
+  height: 100%;
+}
+
+.oncora-spinner-text {
+  font-size: 13px;
+  color: #555555;
+  font-style: italic;
+}

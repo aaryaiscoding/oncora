@@ -32,7 +32,7 @@ Federated learning system for clinical diagnosis — brain tumor classification 
 
 | Layer | Tech |
 |---|---|
-| Frontend | Streamlit |
+| Frontend | React (Vite) |
 | Backend | FastAPI |
 | ML Model | CNN (brain MRI classification) |
 | NLP | Drug interaction analysis |
@@ -70,8 +70,8 @@ uvicorn main:app --reload
 **Frontend**
 ```bash
 cd frontend
-pip install streamlit requests plotly pillow
-streamlit run app.py
+npm install
+npm run dev
 ```
 
 The frontend runs with mock data if the backend isn't running — so you can build and test UI independently.
@@ -124,7 +124,7 @@ oncora/
 │   ├── evaluate_severity.py     # fixed-set severity classification accuracy
 │   └── sanity_check.py          # randomized repeatable round-based accuracy check
 ├── tests/                      # pytest suite for the NLP pipeline
-├── frontend/       # Streamlit dashboard
+├── frontend/       # React (Vite) dashboard
 ├── notebooks/      # Model training and experimentation
 └── docs/
 ```
