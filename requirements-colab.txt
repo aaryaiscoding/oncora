@@ -1,0 +1,7 @@
+# Colab dependencies for Oncora FL experiments
+flwr
+torch
+torchvision
+numpy
+matplotlib
+ray
