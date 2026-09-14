@@ -348,6 +348,24 @@ def evaluate_global_model(parameters):
 
 
 # ---------------------------------------------------------------------------
+# Ray-safe Flower client factory
+# ---------------------------------------------------------------------------
+def make_client(cid: str, experiment_seed: int):
+    """Create a client inside the Ray worker process.
+
+    The function intentionally performs the imports locally so the function
+    serialized by Ray does not capture PyTorch/CUDA state from the driver.
+    """
+    from federated.compare_fedavg_fedprox import SimClient
+
+    hospital_id = int(cid) + 1
+    return SimClient(
+        hospital_id=hospital_id,
+        experiment_seed=experiment_seed,
+    ).to_client()
+
+
+# ---------------------------------------------------------------------------
 # Strategy execution
 # ---------------------------------------------------------------------------
 def run_strategy(
@@ -363,12 +381,16 @@ def run_strategy(
 
     round_history = []
 
-    def client_fn(cid: str):
-        hospital_id = int(cid) + 1
-        return SimClient(
-            hospital_id=hospital_id,
-            experiment_seed=experiment_seed,
-        ).to_client()
+    # IMPORTANT: keep the Ray-serialized client function tiny.
+    # Do not close over PyTorch/CUDA objects or classes here. Ray serializes
+    # this function before sending it to the worker process. The actual
+    # SimClient/PyTorch objects are imported and created inside the worker.
+    from functools import partial
+
+    client_fn = partial(
+        make_client,
+        experiment_seed=experiment_seed,
+    )
 
     def server_evaluate(server_round, parameters, config):
         loss, accuracy = evaluate_global_model(parameters)
