@@ -1,4 +1,4 @@
-﻿"""
+"""
 main.py
 FastAPI app exposing:
   POST /predict-mri            - tumor class + confidence from an MRI image
@@ -12,6 +12,7 @@ import logging
 import sys
 from pathlib import Path
 
+import os
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
@@ -50,7 +51,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger("oncora.backend")
 
 # ---- Config ----
-MODEL_PATH = "../models/mri_classifier.pt"
+_MODELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "models")
+_FL = os.path.join(_MODELS, "mri_federated.pt")
+_CENTRAL = os.path.join(_MODELS, "mri_classifier.pt")
+MODEL_PATH = os.environ.get("ONCORA_MODEL") or (_FL if os.path.exists(_FL) else _CENTRAL)
+print(f"Loading MRI model from {MODEL_PATH}")
 IMG_SIZE = 224
 DEVICE = torch.device("cpu")
 
@@ -78,11 +83,12 @@ class_names = checkpoint["class_names"]
 
 model = models.resnet18(weights=None)
 num_features = model.fc.in_features
-model.fc = nn.Sequential(
-    nn.Dropout(0.4),
-    nn.Linear(num_features, len(class_names))
-)
-model.load_state_dict(checkpoint["model_state_dict"])
+sd = checkpoint["model_state_dict"]
+if "fc.weight" in sd:   # plain Linear head (older centralized checkpoints)
+    model.fc = nn.Linear(num_features, len(class_names))
+else:                   # Dropout + Linear head (current train.py and federated)
+    model.fc = nn.Sequential(nn.Dropout(0.4), nn.Linear(num_features, len(class_names)))
+model.load_state_dict(sd)
 model.to(DEVICE)
 model.eval()
 
@@ -358,4 +364,3 @@ def nlp_sanity_run(payload: SanityRunRequest):
         return result
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-

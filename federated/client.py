@@ -1,4 +1,4 @@
-﻿"""
+"""
 client.py
 Flower federated learning client.
 Each simulated hospital runs an instance of this with its own local data.
@@ -16,14 +16,15 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models, transforms, datasets
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 import flwr as fl
 import numpy as np
 import sys
+import os
 
 # ---- Config ----
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IMG_SIZE = 224
 BATCH_SIZE = 32
 LOCAL_EPOCHS = 2       # how many epochs each hospital trains before sending weights
@@ -81,14 +82,25 @@ class HospitalClient(fl.client.NumPyClient):
         self.model = build_model()
         self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
 
-        data_dir = f"../datasets/federated/hospital_{hospital_id}"
-        train_data = datasets.ImageFolder(root=data_dir, transform=train_transforms)
-        val_data = datasets.ImageFolder(root=data_dir, transform=eval_transforms)
+        data_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..",
+            "datasets", "federated", f"hospital_{hospital_id}",
+        )
+        # Two views of the same folder (augmented for training, plain for eval),
+        # split into DISJOINT train/val index sets so local eval is honest.
+        train_full = datasets.ImageFolder(root=data_dir, transform=train_transforms)
+        val_full = datasets.ImageFolder(root=data_dir, transform=eval_transforms)
+        g = torch.Generator().manual_seed(42 + hospital_id)  # fixed split per hospital
+        perm = torch.randperm(len(train_full), generator=g).tolist()
+        n_val = max(1, int(0.2 * len(perm)))
+        val_idx, train_idx = perm[:n_val], perm[n_val:]
+        train_data = Subset(train_full, train_idx)
+        val_data = Subset(val_full, val_idx)
 
         self.train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
         self.val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
-        print(f"Hospital {hospital_id} initialized with {len(train_data)} images")
+        print(f"Hospital {hospital_id} initialized: {len(train_data)} train / {len(val_data)} val images")
 
     def get_parameters(self, config):
         """Called by server to get this client's current weights."""
@@ -177,6 +189,3 @@ if __name__ == "__main__":
         server_address="127.0.0.1:8080",
         client=HospitalClient(hospital_id=hospital_id),
     )
-
-
-
