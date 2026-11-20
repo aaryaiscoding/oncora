@@ -82,9 +82,16 @@ Global model accuracy on the held-out test set (`datasets/Testing`), FedProx, 3 
 | Setup                          | R1     | R2     | R3     | R4     | R5     | Final  |
 |--------------------------------|--------|--------|--------|--------|--------|--------|
 | 5 rounds, 2 local epochs       | 0.8838 | 0.9150 | 0.9331 | 0.9450 | 0.9431 | 0.9431 |
-| 10 rounds, 5 local epochs      | TBD    |        |        |        |        | TBD    |
 
-`client_accuracy` in the history file is just the clients' own local evaluation, which I keep as a secondary log. The headline number is the server-side `accuracy`.
+10 rounds, 5 local epochs:
+
+| R1     | R2     | R3     | R4     | R5     | R6     | R7     | R8     | R9     | R10    |
+|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+| 0.9188 | 0.9331 | 0.9394 | 0.9475 | 0.9450 | 0.9450 | 0.9475 | 0.9475 | 0.9488 | 0.9494 |
+
+The 10-round run finished in about 19 minutes and ended at 0.9494 global test accuracy, up from 0.9431 with 5 rounds. Most of the gain came in the first 4 rounds, and after that it only crept up.
+
+`client_accuracy` in the history file is just the clients' own local evaluation, which I keep as a secondary log. It reached 0.9884 in round 10, which is higher than the global test number because the clients evaluate on their own held-out images. The headline number is the server-side `accuracy`.
 
 ### FedAvg vs FedProx comparison
 
