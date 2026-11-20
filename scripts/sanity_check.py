@@ -37,9 +37,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.nlp.parser import get_parser  # noqa: E402
-from backend.nlp.interaction_store import InteractionStore  # noqa: E402
-from backend.nlp.interactions import check_prescription  # noqa: E402
+from nlp.parser import get_parser  # noqa: E402
+from nlp.interaction_store import InteractionStore  # noqa: E402
+from nlp.interactions import check_prescription  # noqa: E402
 
 DEFAULT_VOCAB_PATH = str(PROJECT_ROOT / "data" / "drug_vocab.json")
 DEFAULT_DB_PATH = str(PROJECT_ROOT / "data" / "interactions.db")

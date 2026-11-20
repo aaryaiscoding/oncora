@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import tempfile
 from unittest.mock import patch

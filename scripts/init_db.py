@@ -15,7 +15,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from backend.nlp.interaction_store import InteractionStore, Interaction  # noqa: E402
+from nlp.interaction_store import InteractionStore, Interaction  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("oncora.scripts.init_db")

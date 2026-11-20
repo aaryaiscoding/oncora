@@ -7,8 +7,8 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
-from backend.nlp.interaction_store import InteractionStore, Interaction
-from backend.nlp import interactions as interactions_mod
+from nlp.interaction_store import InteractionStore, Interaction
+from nlp import interactions as interactions_mod
 from scripts import sanity_check
 
 # Same convention as test_parser.py — respect SPACY_MODEL_TEST if set (e.g.
@@ -96,7 +96,7 @@ def test_round_detects_extraction_miss(temp_db_seeded, temp_seed_csv):
     design, so production doesn't reload the spaCy model per request),
     which would otherwise silently keep returning whichever vocab an
     earlier test/fixture in this process built first."""
-    from backend.nlp.parser import PrescriptionParser
+    from nlp.parser import PrescriptionParser
 
     sparse_vocab = tempfile.mktemp(suffix=".json")
     json.dump(["aspirin"], open(sparse_vocab, "w"))  # missing warfarin, metformin, furosemide
